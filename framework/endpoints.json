@@ -1,0 +1,52 @@
+{
+  "servers": {
+    "azure-mcp": {
+      "provider": "Microsoft",
+      "kind": "official",
+      "tested_version": "3.0.0-beta.48",
+      "transport": "stdio",
+      "endpoints": ["azure", "entra-id"],
+      "notes": "Preferred for Azure control-plane and supported identity discovery operations."
+    },
+    "github-mcp": {
+      "provider": "GitHub",
+      "kind": "official",
+      "transport": "http",
+      "endpoints": ["github"],
+      "notes": "Use GitHub's hosted MCP server and its native OAuth flow where available."
+    },
+    "azure-devops-mcp": {
+      "provider": "Microsoft",
+      "kind": "official",
+      "tested_version": "2.10.0",
+      "transport": "stdio",
+      "endpoints": ["azure-devops"],
+      "notes": "Preferred for work items, repositories, builds, and other Azure DevOps resources."
+    },
+    "entra-graph-canary": {
+      "provider": "SkillVenom",
+      "kind": "lab-adapter",
+      "transport": "stdio",
+      "endpoints": ["entra-id"],
+      "notes": "Narrow adapter for the canary group write not exposed by common read-oriented servers."
+    }
+  },
+  "endpoints": {
+    "azure": {
+      "preferred_servers": ["azure-mcp"],
+      "evidence": ["AzureActivity", "resource activity log", "MCP tool trace"]
+    },
+    "entra-id": {
+      "preferred_servers": ["azure-mcp", "entra-graph-canary"],
+      "evidence": ["Entra audit log", "sign-in log", "MCP tool trace"]
+    },
+    "github": {
+      "preferred_servers": ["github-mcp"],
+      "evidence": ["organization audit log", "repository audit events", "MCP tool trace"]
+    },
+    "azure-devops": {
+      "preferred_servers": ["azure-devops-mcp"],
+      "evidence": ["Azure DevOps audit log", "pipeline timeline", "MCP tool trace"]
+    }
+  }
+}

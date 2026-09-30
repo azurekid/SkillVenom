@@ -1,0 +1,69 @@
+{
+  "servers": {
+    "azure-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@azure/mcp@3.0.0-beta.48", "server", "start"]
+    },
+    "github-mcp": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "azure-devops-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp@2.10.0", "${input:ado-organization}"]
+    },
+    "entra-graph-canary": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/connectors/entra-graph-mcp/.venv/bin/python",
+      "args": ["${workspaceFolder}/connectors/entra-graph-mcp/server.py"],
+      "env": {
+        "AZURE_TENANT_ID": "${input:entra-tenant-id}",
+        "AZURE_CLIENT_ID": "${input:entra-client-id}",
+        "AZURE_CLIENT_SECRET": "${input:entra-client-secret}",
+        "SV001_ALLOWED_USER_UPN": "${input:entra-canary-user}",
+        "SV001_ALLOWED_GROUP": "${input:entra-canary-group}",
+        "SV001_WRITE_CONFIRMATION": "${input:entra-write-confirmation}"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "id": "ado-organization",
+      "type": "promptString",
+      "description": "Azure DevOps organization name"
+    },
+    {
+      "id": "entra-tenant-id",
+      "type": "promptString",
+      "description": "Entra lab tenant ID"
+    },
+    {
+      "id": "entra-client-id",
+      "type": "promptString",
+      "description": "Entra lab application client ID"
+    },
+    {
+      "id": "entra-client-secret",
+      "type": "promptString",
+      "description": "Short-lived Entra lab application secret",
+      "password": true
+    },
+    {
+      "id": "entra-canary-user",
+      "type": "promptString",
+      "description": "Allowlisted Entra canary user UPN"
+    },
+    {
+      "id": "entra-canary-group",
+      "type": "promptString",
+      "description": "Allowlisted Entra canary group"
+    },
+    {
+      "id": "entra-write-confirmation",
+      "type": "promptString",
+      "description": "Type: ADD <canary-user-upn> TO <canary-group>"
+    }
+  ]
+}

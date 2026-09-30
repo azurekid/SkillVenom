@@ -1,0 +1,42 @@
+# Local editor and MCP configuration
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+*.swp
+
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+*.secrets.json
+
+# Python environments, caches, and build output
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+build/
+dist/
+.coverage
+coverage.xml
+htmlcov/
+
+# Node dependencies and caches
+**/node_modules/
+**/.npm/
+
+# Local assessment evidence and generated reports
+evidence/
+reports/
+run-output/

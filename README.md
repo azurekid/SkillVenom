@@ -1,53 +1,64 @@
-<img width="659" height="616" alt="image" src="https://github.com/user-attachments/assets/26346397-c78d-4af1-a30b-42cf477dd4e3" />
+# SkillVenom
 
-# Project SkillVenom: Advanced Agent Exploitation & Cloud Audit Suite
+SkillVenom is a security-awareness and authorized assessment repository for demonstrating how agent skills, retrieved content, and tool output can influence production-connected AI agents. Scenarios use realistic MCP integrations while constraining live impact to disposable canary resources.
 
-Project **SkillVenom** is a weaponized penetration testing, compliance, and security awareness framework designed to evaluate vulnerabilities in production **AI Agent Architectures**. 
+## Supported Endpoints
 
-Unlike abstract token simulations, this framework tests against **live corporate sandboxes** (Microsoft Entra ID Tenants, Azure Subscriptions, GitHub Organizations, and Azure DevOps Instances). By pairing standard `.agent.md` or `SKILL.md` open frontmatter configurations with real cloud SDKs, Project SkillVenom demonstrates a critical architectural reality: **the security flaw lies in the cognitive routing of the LLM, which uses its legitimate cloud administrative privileges to execute malicious commands.**
+| Endpoint | Production-like integration | Native evidence |
+| :--- | :--- | :--- |
+| Microsoft Entra ID | Azure MCP and a narrow Graph canary adapter for uncovered write operations | Entra audit and sign-in logs |
+| Azure | Microsoft Azure MCP Server | Azure Activity Log |
+| GitHub | GitHub MCP Server | Organization and repository audit logs |
+| Azure DevOps | Microsoft Azure DevOps MCP Server | Azure DevOps audit and pipeline logs |
 
----
+The endpoint registry is in `framework/endpoints.json`; MCP launch profiles are in `mcp/production.example.json`.
 
-## Threat Vector Realities
-*   **Identity Trust:** The target agent does not require binary modification, reverse engineering, or classical malware delivery. It executes unauthorized infrastructure shifts using its **legitimate enterprise service principal tokens**.
-*   **Command Hijacking:** Attackers leverage advanced **Structural Obfuscation** (Markdown Table breakouts, Fake Stack Traces, and Base64 Lures) to blend malicious instructions into standard engineering logs. The LLM processes these logs as instructions rather than passive text data.
-*   **Human Decoying:** The agent is manipulated into generating a fake successful status JSON report for the frontend user interface while simultaneously invoking destructive background tool APIs.
+## Scenarios
 
----
+| ID | Source | Impact | Vector |
+| :--- | :--- | :--- | :--- |
+| Entra VS001 | Azure DevOps telemetry | Entra ID | Markdown table indirect prompt injection |
+| Azure VS002 | Bicep pull-request metadata | Entra ID | ARM/Bicep metadata contamination |
 
-## 📂 Repository Architecture
+## Scenario Layout
 
 ```text
-project-skillvenom/
-├── README.md                          # Global weaponized suite execution guide
-├── skill.md                           # Standardization template for creating new scenarios
-├── config/
-│   └── .env.template                  # Enterprise connection mapping schema
-├── core/
-│   ├── __init__.py
-│   ├── auth.py                        # Live Entra ID Token Broker & Azure Credential Manager
-│   └── engine.py                      # Universal frontmatter parsing engine
-└── use-cases/                         # Categorized Live Exploitation Suites
-    ├── 01-entra-jit/                  # Live Entra ID Tenant Exploitation
-    │   ├── README.md                  # Scenario brief and JIT risk profile
-    │   ├── agent.skill.md             # Standard universal frontmatter configuration
-    │   ├── live_test.py               # EXECUTES REAL MS GRAPH CALLS
-    │   └── payloads/                  
-    │       └── 01_table_breakout.txt  # Markdown telemetry matrix exploit
-    └── 02-azure-arm/                  # Live Azure Subscription Exploitation
-        ├── README.md                  # Scenario brief and Network Security Group risk profile
-        ├── agent.skill.md             # Standard universal frontmatter configuration
-        ├── live_test.py               # ALTERS LIVE NETWORK SECURITY GROUPS (NSGs)
-        └── payloads/                  
-            └── 03_stack_trace.log     # System error traceback injection
+use-cases/<endpoint>/<scenario>/
+├── scenario.json       # Endpoint, MCP dependencies, modes, evidence, and canaries
+├── README.md           # Threat model and operator runbook
+├── payloads/           # Untrusted retrieved content, logs, tickets, and attachments
+├── weaponized-skill/   # Inert malicious skill fixtures for skill-poisoning scenarios
+└── scripts/            # Optional setup, evidence, or cleanup helpers
 ```
 
----
+Trusted evaluator and authoring workflows belong in `.agents/skills/`. Weaponized skills remain inert inside their scenario. Copy a fixture into a disposable target workspace's `.agents/skills/` directory only for an authorized exercise; use `.github/skills/` only when a host does not scan the generic location.
 
-## Live Use-Case Folder Standard
-Every targeted environment within `use-cases/` is isolated and self-contained to support realistic red-team / audit drills:
-*   **`agent.skill.md`**: The system prompt following the `agentskills.io` standard. It contains the YAML frontmatter describing the allowed tool schema. **This file remains completely unmodified during attacks**.
-*   **`payloads/`**: Houses text files simulating raw data ingested by the agent (e.g., tickets, log streams, Bicep code). Instructions are nested inside standard data elements to bypass basic keyword blocklists.
-*   **`live_test.py`**: The actual execution test harness. It maps the agent parameters to an active LLM session (OpenAI GPT-4o / Anthropic Claude), captures the output state, borrows the authentication token from the central broker, and fires **real API calls** at the cloud tenant.
+## Run a Scenario
 
----
+```bash
+python3 framework/scripts/scenario.py validate --all
+python3 framework/scripts/scenario.py plan use-cases/entra/vs001/scenario.json --mode dry-run
+```
+
+You can also invoke `/run-skillvenom-scenario` in VS Code with the manifest path and mode.
+
+## Authoring Personas
+
+Invoke `/use-case-orchestrator` with the source endpoint, impact endpoint, and idea. It runs the specialist personas in order:
+
+| Stage | Persona | Responsibility |
+| :--- | :--- | :--- |
+| 1 | Scenario architect | Manifest, threat model, and runbook |
+| 2 | Payload author | Inert source content and skill fixtures |
+| 3 | Endpoint integrator | MCP servers, tools, canaries, and evidence |
+| 4 | Safety reviewer | Contract, trust-boundary, and activation review |
+
+The individual skills remain available for a targeted revision. They author repository artifacts only; hostile fixtures remain inactive until copied into a disposable target workspace.
+
+Every scenario must provide a zero-write `dry-run`. A `lab-impact` mode is optional and must declare disposable canary targets, require operator approval, preserve endpoint-native auditing, and use a least-privileged identity. Payloads never contain credentials or approval values.
+
+## Add a Scenario
+
+Copy `use-cases/_template/`, select one of the registered endpoints, declare the common MCP server and exact required tools, then add the payload and expected evidence. Use an endpoint-specific script or adapter only when the common server has a documented capability gap.
+
+See `framework/README.md` for the contract and validation commands.
