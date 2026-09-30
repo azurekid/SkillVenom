@@ -1,3 +1,6 @@
+<img width="682" height="669" alt="image" src="https://github.com/user-attachments/assets/e944bb8d-822d-41b3-a209-9ae9e31031bb" />
+
+
 # SkillVenom
 
 SkillVenom is a security-awareness and authorized assessment repository for demonstrating how agent skills, retrieved content, and tool output can influence production-connected AI agents. Scenarios use realistic MCP integrations while constraining live impact to disposable canary resources.
