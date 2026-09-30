@@ -1,4 +1,4 @@
-<img width="70%" height="70%" alt="image" src="https://github.com/user-attachments/assets/16174682-7ce6-4b77-ac04-cf1570835671" />
+<img width="659" height="616" alt="image" src="https://github.com/user-attachments/assets/26346397-c78d-4af1-a30b-42cf477dd4e3" />
 
 # Project SkillVenom: Advanced Agent Exploitation & Cloud Audit Suite
 
