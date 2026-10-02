@@ -29,11 +29,18 @@
       "transport": "stdio",
       "endpoints": ["entra-id"],
       "notes": "Narrow adapter for the canary group write not exposed by common read-oriented servers."
+    },
+    "azure-rbac-canary": {
+      "provider": "SkillVenom",
+      "kind": "lab-adapter",
+      "transport": "stdio",
+      "endpoints": ["azure"],
+      "notes": "Narrow adapter for the canary Reader role assignment; Azure MCP exposes RBAC read-only."
     }
   },
   "endpoints": {
     "azure": {
-      "preferred_servers": ["azure-mcp"],
+      "preferred_servers": ["azure-mcp", "azure-rbac-canary"],
       "evidence": ["AzureActivity", "resource activity log", "MCP tool trace"]
     },
     "entra-id": {

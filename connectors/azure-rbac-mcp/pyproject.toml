@@ -1,0 +1,17 @@
+[project]
+name = "skillvenom-azure-rbac-mcp"
+version = "0.1.0"
+description = "Allowlisted Azure RBAC MCP adapter for SkillVenom canary role-assignment lab-impact"
+requires-python = ">=3.11"
+dependencies = [
+    "azure-identity>=1.19,<2",
+    "azure-mgmt-authorization>=4,<5",
+    "mcp[cli]>=1.9,<2",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<9"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

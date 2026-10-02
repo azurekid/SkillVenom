@@ -1,0 +1,41 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scenarios:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate all scenario manifests
+        run: python3 framework/scripts/scenario.py validate --all
+      - name: Check scenario catalog is up to date
+        run: python3 framework/scripts/scenario.py catalog --check
+      - name: Run framework tests
+        run: python3 -m unittest discover -s framework/tests -v
+
+  connectors:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        connector: [entra-graph-mcp, azure-rbac-mcp]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install connector with test extras
+        run: python3 -m pip install -e ".[test]"
+        working-directory: connectors/${{ matrix.connector }}
+      - name: Run connector tests
+        run: python3 -m pytest -q
+        working-directory: connectors/${{ matrix.connector }}

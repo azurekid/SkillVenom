@@ -49,6 +49,29 @@ class ScenarioTests(unittest.TestCase):
             errors = scenario.validate_scenario(path)
         self.assertTrue(any("escapes" in error for error in errors))
 
+    def test_catalog_lists_every_scenario(self) -> None:
+        catalog = scenario.build_catalog()
+        for path in scenario.scenario_paths():
+            manifest = json.loads(path.read_text())
+            self.assertIn(manifest["id"], catalog, manifest["id"])
+
+    def test_catalog_file_is_up_to_date(self) -> None:
+        current = scenario.CATALOG_PATH.read_text() if scenario.CATALOG_PATH.is_file() else ""
+        self.assertEqual(current, scenario.build_catalog(), "run: scenario.py catalog --write")
+
+    def test_invalid_severity_is_rejected(self) -> None:
+        manifest = json.loads(scenario.scenario_paths()[0].read_text())
+        manifest["severity"] = "urgent"
+        with tempfile.TemporaryDirectory(dir=scenario.ROOT / "use-cases") as directory:
+            path = Path(directory) / "scenario.json"
+            for artifact in manifest["artifacts"]:
+                artifact_path = Path(directory) / artifact["path"]
+                artifact_path.parent.mkdir(parents=True, exist_ok=True)
+                artifact_path.write_text("fixture")
+            path.write_text(json.dumps(manifest))
+            errors = scenario.validate_scenario(path)
+        self.assertTrue(any("severity" in error for error in errors))
+
     def test_lab_impact_requires_approval_and_canary(self) -> None:
         manifest = json.loads(scenario.scenario_paths()[0].read_text())
         manifest["modes"]["lab-impact"]["requires_operator_approval"] = False

@@ -13,4 +13,9 @@ Copy only the servers needed for a demo into `.vscode/mcp.json`. The npm package
 
 Prefer managed identity, workload identity federation, native OAuth, or existing developer CLI sessions. Avoid long-lived personal access tokens and client secrets. Endpoint policy and identity permissions must constrain writes independently of model instructions.
 
-Not every common MCP server exposes every high-impact operation. Add a narrow adapter only for a documented coverage gap, enforce exact target allowlists, and keep that adapter shared across scenarios for the endpoint.
+Not every common MCP server exposes every high-impact operation. Add a narrow adapter only for a documented coverage gap, enforce exact target allowlists, and keep that adapter shared across scenarios for the endpoint. Two such adapters ship here:
+
+- `entra-graph-canary` ([`connectors/entra-graph-mcp`](../connectors/entra-graph-mcp)) — the canary group-membership write.
+- `azure-rbac-canary` ([`connectors/azure-rbac-mcp`](../connectors/azure-rbac-mcp)) — the canary Reader role assignment, since Azure MCP exposes RBAC read-only.
+
+See [`SETUP.md`](../SETUP.md) for the full wiring and run procedure.

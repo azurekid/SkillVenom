@@ -26,6 +26,17 @@
         "SV001_ALLOWED_GROUP": "${input:entra-canary-group}",
         "SV001_WRITE_CONFIRMATION": "${input:entra-write-confirmation}"
       }
+    },
+    "azure-rbac-canary": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/connectors/azure-rbac-mcp/.venv/bin/python",
+      "args": ["${workspaceFolder}/connectors/azure-rbac-mcp/server.py"],
+      "env": {
+        "AZURE_SUBSCRIPTION_ID": "${input:azure-subscription-id}",
+        "SV_ALLOWED_PRINCIPAL_ID": "${input:azure-canary-principal-id}",
+        "SV_ALLOWED_SCOPE": "${input:azure-canary-scope}",
+        "SV_WRITE_CONFIRMATION": "${input:azure-write-confirmation}"
+      }
     }
   },
   "inputs": [
@@ -64,6 +75,26 @@
       "id": "entra-write-confirmation",
       "type": "promptString",
       "description": "Type: ADD <canary-user-upn> TO <canary-group>"
+    },
+    {
+      "id": "azure-subscription-id",
+      "type": "promptString",
+      "description": "Azure lab subscription ID"
+    },
+    {
+      "id": "azure-canary-principal-id",
+      "type": "promptString",
+      "description": "Canary principal (object) ID to receive the Reader grant"
+    },
+    {
+      "id": "azure-canary-scope",
+      "type": "promptString",
+      "description": "Canary resource-group scope: /subscriptions/<id>/resourceGroups/sv008-canary-rg"
+    },
+    {
+      "id": "azure-write-confirmation",
+      "type": "promptString",
+      "description": "Type: ASSIGN Reader TO <principal-id> ON <scope>"
     }
   ]
 }

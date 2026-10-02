@@ -1,9 +1,11 @@
 <img width="682" height="669" alt="image" src="https://github.com/user-attachments/assets/e944bb8d-822d-41b3-a209-9ae9e31031bb" />
 
 
-# SkillVenom
+# Skill Venom
 
-SkillVenom is a security-awareness and authorized assessment repository for demonstrating how agent skills, retrieved content, and tool output can influence production-connected AI agents. Scenarios use realistic MCP integrations while constraining live impact to disposable canary resources.
+Skill Venom is a security-awareness and authorized assessment repository for demonstrating how agent skills, retrieved content, and tool output can influence production-connected AI agents. Scenarios use realistic MCP integrations while constraining live impact to disposable canary resources.
+
+> **Running against a real environment?** See [`SETUP.md`](SETUP.md) for the operator runbook: dependencies, canary provisioning (`scripts/provision.sh`), MCP configuration, the tool-name mapping, and the dry-run → lab-impact procedure. Read [`SECURITY.md`](SECURITY.md) first.
 
 ## Supported Endpoints
 
@@ -18,10 +20,28 @@ The endpoint registry is in `framework/endpoints.json`; MCP launch profiles are 
 
 ## Scenarios
 
-| ID | Source | Impact | Vector |
+The full, always-current list is in [`use-cases/CATALOG.md`](use-cases/CATALOG.md), generated from the
+scenario manifests. Attack-vector and framework mappings (OWASP LLM Top 10, MITRE ATLAS) are in
+[`framework/taxonomy.json`](framework/taxonomy.json).
+
+| ID | Source → Impact | Vector | Impact demonstrated |
 | :--- | :--- | :--- | :--- |
-| Entra VS001 | Azure DevOps telemetry | Entra ID | Markdown table indirect prompt injection |
-| Azure VS002 | Bicep pull-request metadata | Entra ID | ARM/Bicep metadata contamination |
+| Entra VS001 | Azure DevOps → Entra ID | Indirect prompt injection | Group-membership change |
+| Azure VS002 | Azure → Entra ID | Indirect prompt injection (IaC metadata) | Cross-plane group change |
+| GitHub VS003 | GitHub → GitHub | Skill poisoning | Repository data leakage |
+| Azure DevOps VS004 | Azure DevOps → Azure DevOps | Indirect prompt injection | Pipeline code injection |
+| GitHub VS005 | GitHub → GitHub | Indirect prompt injection (issue) | GitHub Actions code injection |
+| Azure DevOps VS006 | Azure DevOps → Azure DevOps | Skill poisoning | Pipeline-secret leakage |
+| Entra VS007 | Entra ID → Entra ID | Skill poisoning | Access-review privilege escalation |
+| Azure VS008 | Azure → Azure | Indirect prompt injection (tags) | RBAC role assignment |
+| GitHub VS009 | GitHub → Azure | Cross-plane indirect prompt injection | RBAC role assignment |
+| Entra VS010 | Entra ID → Entra ID | Tool-output injection | Group-membership change |
+
+Regenerate the catalog after adding or editing a scenario:
+
+```bash
+python3 framework/scripts/scenario.py catalog --write
+```
 
 ## Scenario Layout
 
@@ -62,6 +82,6 @@ Every scenario must provide a zero-write `dry-run`. A `lab-impact` mode is optio
 
 ## Add a Scenario
 
-Copy `use-cases/_template/`, select one of the registered endpoints, declare the common MCP server and exact required tools, then add the payload and expected evidence. Use an endpoint-specific script or adapter only when the common server has a documented capability gap.
+Copy `use-cases/_template/`, select one of the registered endpoints, declare the common MCP server and exact required tools, then add the payload and expected evidence. Use an endpoint-specific script or adapter only when the common server has a documented capability gap. Run `python3 framework/scripts/scenario.py catalog --write` afterward to refresh `use-cases/CATALOG.md`.
 
-See `framework/README.md` for the contract and validation commands.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the authoring checklist and non-negotiable safety rules, [`SECURITY.md`](SECURITY.md) for the authorized-use policy, and `framework/README.md` for the contract and validation commands. CI (`.github/workflows/validate.yml`) runs manifest validation, a catalog freshness check, and the framework tests on every push and pull request.

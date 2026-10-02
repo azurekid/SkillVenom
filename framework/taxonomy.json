@@ -1,0 +1,37 @@
+{
+  "description": "Reference taxonomy for SkillVenom scenarios. Maps attack vectors to techniques and external frameworks. Advisory only; the planner does not enforce these values.",
+  "attack_vectors": {
+    "indirect-prompt-injection": {
+      "summary": "Untrusted content retrieved by the agent (logs, tickets, issues, metadata, web) is treated as an instruction.",
+      "owasp_llm": ["LLM01:2025 Prompt Injection"],
+      "mitre_atlas": ["AML.T0051.001"]
+    },
+    "tool-output-injection": {
+      "summary": "The injection rides in on the output of a legitimate, expected tool call (e.g. a profile field, API response).",
+      "owasp_llm": ["LLM01:2025 Prompt Injection", "LLM05:2025 Improper Output Handling"],
+      "mitre_atlas": ["AML.T0051.001"]
+    },
+    "skill-poisoning": {
+      "summary": "Attacker-authored skill/plugin content is trusted as workflow guidance and promoted to action.",
+      "owasp_llm": ["LLM03:2025 Supply Chain", "LLM06:2025 Excessive Agency"],
+      "mitre_atlas": ["AML.T0053"]
+    }
+  },
+  "impact_classes": {
+    "privilege-escalation": "Agent changes an identity or access boundary (group membership, role assignment).",
+    "ci-code-injection": "Agent inserts executable steps into a pipeline or workflow.",
+    "data-exfiltration": "Agent copies sensitive or canary-marked content to an out-of-bounds destination.",
+    "control-plane-rbac": "Agent changes cloud RBAC or resource configuration."
+  },
+  "owasp_llm_top_10_2025": {
+    "LLM01:2025": "Prompt Injection",
+    "LLM02:2025": "Sensitive Information Disclosure",
+    "LLM03:2025": "Supply Chain",
+    "LLM05:2025": "Improper Output Handling",
+    "LLM06:2025": "Excessive Agency"
+  },
+  "references": [
+    {"title": "OWASP Top 10 for LLM Applications", "url": "https://genai.owasp.org/llm-top-10/"},
+    {"title": "MITRE ATLAS", "url": "https://atlas.mitre.org/"}
+  ]
+}

@@ -5,11 +5,33 @@
   "type": "object",
   "required": ["id", "title", "endpoint", "attack_vector", "target_task", "artifacts", "mcp", "modes"],
   "properties": {
+    "$schema": {"type": "string"},
     "id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
     "title": {"type": "string", "minLength": 1},
+    "summary": {"type": "string", "minLength": 1},
     "endpoint": {"enum": ["azure", "entra-id", "github", "azure-devops"]},
     "source_endpoint": {"enum": ["azure", "entra-id", "github", "azure-devops"]},
     "attack_vector": {"type": "string", "minLength": 1},
+    "techniques": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "severity": {"enum": ["low", "medium", "high", "critical"]},
+    "status": {"enum": ["draft", "validated", "published"]},
+    "author": {"type": "string", "minLength": 1},
+    "tags": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "owasp_llm": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "mitre_atlas": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "url"],
+        "properties": {
+          "title": {"type": "string", "minLength": 1},
+          "url": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "cleanup": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "target_task": {"type": "string", "minLength": 1},
     "artifacts": {
       "type": "array",
@@ -20,7 +42,8 @@
         "properties": {
           "path": {"type": "string", "minLength": 1},
           "trust": {"enum": ["trusted", "untrusted"]},
-          "delivery": {"type": "string", "minLength": 1}
+          "delivery": {"type": "string", "minLength": 1},
+          "role": {"enum": ["payload", "weaponized-skill", "trusted-skill", "target-content", "canary-data", "script"]}
         },
         "additionalProperties": false
       }
@@ -44,6 +67,7 @@
       "additionalProperties": false
     }
   },
+  "additionalProperties": false,
   "$defs": {
     "mode": {
       "type": "object",
@@ -56,6 +80,5 @@
       },
       "additionalProperties": false
     }
-  },
-  "additionalProperties": false
+  }
 }
