@@ -1,5 +1,5 @@
 {
-  "description": "Reference taxonomy for SkillVenom scenarios. Maps attack vectors to techniques and external frameworks. Advisory only; the planner does not enforce these values.",
+  "description": "Reference taxonomy for Skill Venom scenarios. Maps attack vectors to techniques and external frameworks. Advisory only; the planner does not enforce these values.",
   "attack_vectors": {
     "indirect-prompt-injection": {
       "summary": "Untrusted content retrieved by the agent (logs, tickets, issues, metadata, web) is treated as an instruction.",
