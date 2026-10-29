@@ -1,87 +1,76 @@
-<img width="682" height="669" alt="image" src="https://github.com/user-attachments/assets/e944bb8d-822d-41b3-a209-9ae9e31031bb" />
+# SkillVenom use-case catalogue
 
+A catalogue of **defanged, test-backed** agent-file attacks, organised by category and tagged by
+target platform. Each use case is one small payload plus the exact SkillVenom rules it should
+trigger, a benign look-alike where one exists, and a mapping to MITRE ATLAS and OWASP Agentic
+(ASI). It is the test-backed counterpart to catalogues such as the
+[SkillVenom research use-cases](https://github.com/azurekid/SkillVenom/tree/main/use-cases) and
+[skills-security-audit](https://github.com/agentnode-dev/skills-security-audit): every entry is a
+working sample, not just prose.
 
-# Skill Venom
+See [CATALOG.md](CATALOG.md) for the full index (generated). Browse categories:
 
-Skill Venom is a security-awareness and authorized assessment repository for demonstrating how agent skills, retrieved content, and tool output can influence production-connected AI agents. Scenarios use realistic MCP integrations while constraining live impact to disposable canary resources.
+| Code | Category |
+|------|----------|
+| PI | Prompt Injection & Instruction Override |
+| DE | Data Exfiltration & Covert Channels |
+| CE | Command Execution & Remote Payloads |
+| OB | Obfuscation & Hidden Content |
+| PA | Autonomy & Platform-Config Abuse |
+| SC | Supply Chain & Dependency Trust |
+| MP | Memory, Persistence & Untrusted Sources |
+| TM | Tool Misuse & Privilege Abuse |
+| CR | Hardcoded Credentials & Secrets |
 
-> **Running against a real environment?** See [`SETUP.md`](SETUP.md) for the operator runbook: dependencies, canary provisioning (`scripts/provision.sh`), MCP configuration, the tool-name mapping, and the dry-run → lab-impact procedure. Read [`SECURITY.md`](SECURITY.md) first.
+## Layout
 
-## Supported Endpoints
+```
+use-cases/
+  taxonomy.json           categories and platforms
+  schema.json             JSON schema for every use-case.json
+  _template/              starting point for a new case
+  CATALOG.md              generated index (by category and by platform)
+  <category-slug>/<ID>/
+    use-case.json         metadata, expected rules, ATLAS/ASI mapping
+    README.md             generated, human-readable
+    payload/<scan_as>     the complete, defanged attack file under its real name
+                          (payload/AGENTS.md, payload/.claude/settings.json, ...)
+    benign/<scan_as>      optional clean look-alike that must NOT trigger HIGH/CRITICAL
+```
 
-| Endpoint | Production-like integration | Native evidence |
-| :--- | :--- | :--- |
-| Microsoft Entra ID | Azure MCP and a narrow Graph canary adapter for uncovered write operations | Entra audit and sign-in logs |
-| Azure | Microsoft Azure MCP Server | Azure Activity Log |
-| GitHub | GitHub MCP Server | Organization and repository audit logs |
-| Azure DevOps | Microsoft Azure DevOps MCP Server | Azure DevOps audit and pipeline logs |
+## Safety rules
 
-The endpoint registry is in `framework/endpoints.json`; MCP launch profiles are in `mcp/production.example.json`.
+- **Every payload is inert and defanged.** Hosts use `.example`/`.invalid` domains or documented
+  canaries; credentials are synthetic shapes, never live values. Never run a payload.
+- Payloads are complete, realistic files stored under their **real names**, so they can be
+  inspected and uploaded as-is. The attack is buried in otherwise ordinary content, as it would
+  be in the wild. `artifacts[].scan_as` records the path a scanner should treat the file as.
+- ⚠️ Because the names are real, an agent whose working directory is inside a case folder (or
+  that loads nested `AGENTS.md` files) may load a payload. Do not run coding agents from inside
+  `use-cases/`, and do not copy a payload into a real project. [AGENTS.md](AGENTS.md) in this
+  folder tells agents that load nested instructions to treat everything below as hostile data.
+- The scanners (`scan_agents_md.py` and `Scan-AgentsMd.ps1`) are the source of truth. `use-case.json`
+  records the rules that **actually** fire, so the catalogue can never drift from the detectors.
 
-## Scenarios
-
-The full, always-current list is in [`use-cases/CATALOG.md`](use-cases/CATALOG.md), generated from the
-scenario manifests. Attack-vector and framework mappings (OWASP LLM Top 10, MITRE ATLAS) are in
-[`framework/taxonomy.json`](framework/taxonomy.json).
-
-| ID | Source → Impact | Vector | Impact demonstrated |
-| :--- | :--- | :--- | :--- |
-| Entra VS001 | Azure DevOps → Entra ID | Indirect prompt injection | Group-membership change |
-| Azure VS002 | Azure → Entra ID | Indirect prompt injection (IaC metadata) | Cross-plane group change |
-| GitHub VS003 | GitHub → GitHub | Skill poisoning | Repository data leakage |
-| Azure DevOps VS004 | Azure DevOps → Azure DevOps | Indirect prompt injection | Pipeline code injection |
-| GitHub VS005 | GitHub → GitHub | Indirect prompt injection (issue) | GitHub Actions code injection |
-| Azure DevOps VS006 | Azure DevOps → Azure DevOps | Skill poisoning | Pipeline-secret leakage |
-| Entra VS007 | Entra ID → Entra ID | Skill poisoning | Access-review privilege escalation |
-| Azure VS008 | Azure → Azure | Indirect prompt injection (tags) | RBAC role assignment |
-| GitHub VS009 | GitHub → Azure | Cross-plane indirect prompt injection | RBAC role assignment |
-| Entra VS010 | Entra ID → Entra ID | Tool-output injection | Group-membership change |
-
-Regenerate the catalog after adding or editing a scenario:
+## Tooling
 
 ```bash
-python3 framework/scripts/scenario.py catalog --write
+python tools/use_cases.py validate        # schema + referential checks
+python tools/use_cases.py render          # regenerate README.md files and CATALOG.md
+python tools/use_cases.py render --check   # CI: fail if docs are stale
+python tools/use_cases.py materialize DEST # copy payloads to DEST under their scan_as paths
 ```
 
-## Scenario Layout
+`tools/build_sample_catalog.py` reads this catalogue (plus runtime-generated synthetic credential
+shapes) to produce `web/samples.json`, which powers the **Sample library** on the web portal. A test
+(`tests/test_web.py`) fails if the catalogue, the generated docs or `web/samples.json` are out of
+date, or if any detector lacks a sample.
 
-```text
-use-cases/<endpoint>/<scenario>/
-├── scenario.json       # Endpoint, MCP dependencies, modes, evidence, and canaries
-├── README.md           # Threat model and operator runbook
-├── payloads/           # Untrusted retrieved content, logs, tickets, and attachments
-├── weaponized-skill/   # Inert malicious skill fixtures for skill-poisoning scenarios
-└── scripts/            # Optional setup, evidence, or cleanup helpers
-```
+## Adding a use case
 
-Trusted evaluator and authoring workflows belong in `.agents/skills/`. Weaponized skills remain inert inside their scenario. Copy a fixture into a disposable target workspace's `.agents/skills/` directory only for an authorized exercise; use `.github/skills/` only when a host does not scan the generic location.
-
-## Run a Scenario
-
-```bash
-python3 framework/scripts/scenario.py validate --all
-python3 framework/scripts/scenario.py plan use-cases/entra/vs001/scenario.json --mode dry-run
-```
-
-You can also invoke `/run-skillvenom-scenario` in VS Code with the manifest path and mode.
-
-## Authoring Personas
-
-Invoke `/use-case-orchestrator` with the source endpoint, impact endpoint, and idea. It runs the specialist personas in order:
-
-| Stage | Persona | Responsibility |
-| :--- | :--- | :--- |
-| 1 | Scenario architect | Manifest, threat model, and runbook |
-| 2 | Payload author | Inert source content and skill fixtures |
-| 3 | Endpoint integrator | MCP servers, tools, canaries, and evidence |
-| 4 | Safety reviewer | Contract, trust-boundary, and activation review |
-
-The individual skills remain available for a targeted revision. They author repository artifacts only; hostile fixtures remain inactive until copied into a disposable target workspace.
-
-Every scenario must provide a zero-write `dry-run`. A `lab-impact` mode is optional and must declare disposable canary targets, require operator approval, preserve endpoint-native auditing, and use a least-privileged identity. Payloads never contain credentials or approval values.
-
-## Add a Scenario
-
-Copy `use-cases/_template/`, select one of the registered endpoints, declare the common MCP server and exact required tools, then add the payload and expected evidence. Use an endpoint-specific script or adapter only when the common server has a documented capability gap. Run `python3 framework/scripts/scenario.py catalog --write` afterward to refresh `use-cases/CATALOG.md`.
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the authoring checklist and non-negotiable safety rules, [`SECURITY.md`](SECURITY.md) for the authorized-use policy, and `framework/README.md` for the contract and validation commands. CI (`.github/workflows/validate.yml`) runs manifest validation, a catalog freshness check, and the framework tests on every push and pull request.
+1. Copy `_template/use-case.json` into `use-cases/<category-slug>/<ID>/` and add
+   `payload/<scan_as>` (and optionally `benign/<scan_as>`), for example `payload/AGENTS.md`.
+2. Fill in the metadata. Leave `expected.rules`, `mitre_atlas` and `owasp_asi` consistent with what
+   the scanner reports for your payload.
+3. Run `python tools/use_cases.py validate && python tools/use_cases.py render`, then
+   `python tools/build_sample_catalog.py`, and finally the test suite.
