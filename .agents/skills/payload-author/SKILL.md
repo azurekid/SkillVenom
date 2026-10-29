@@ -1,5 +1,5 @@
 ---
-name: payload-author
+name: payload-authors
 description: 'Author inert SkillVenom payloads and weaponized skill fixtures. Use when writing logs, tickets, pull-request content, Bicep metadata, or inactive SKILL.md examples for a new awareness scenario.'
 argument-hint: '<path-to-scenario-directory>'
 user-invocable: true
