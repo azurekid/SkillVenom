@@ -1,0 +1,47 @@
+name: Approve skills
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".agents/skills/**"
+      - ".claude/skills/**"
+      - ".gemini/skills/**"
+      - ".github/skills/**"
+      - ".opencode/skills/**"
+      - "skills/**"
+      - ".github/workflows/approve-skills.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: skillseal-approval-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  approve:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azurekid/skillseal@83dd7fa1f5841e3d8281dab7b93a480a201b9e1e
+        with:
+          signing-method: key
+          scan: "skillseal scan --fail-on HIGH {path}"
+          approval-private-key: ${{ secrets.SKILLSEAL_APPROVAL_PRIVATE_KEY }}
+          skills: |
+            .agents/skills/*
+            .claude/skills/*
+            .gemini/skills/*
+            .github/skills/*
+            .opencode/skills/*
+            skills/*
+      - name: Commit signatures
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name 'skillseal[bot]'
+          git config user.email 'skillseal@users.noreply.github.com'
+          git add -- ':(glob)**/skill.oms.sig'
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Sign approved skills'
+          git push origin "HEAD:refs/heads/$BRANCH"
