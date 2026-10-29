@@ -1,5 +1,5 @@
 ---
-name: friendly-greeting
+name: friendly-greetings
 description: Write a short, friendly greeting without using tools.
 ---
 
